@@ -1,0 +1,30 @@
+ select
+   SUM(c.achieve),SUM(c.pay),SUM(c.extraAchieve),SUM(c.extraPay),month(c.packing_time),year(c.packing_time),c.vehicle
+ from 
+(
+
+        SELECT
+        a.belong_companies_id,a.mc_id,a.searchPrice,a.vehicle,a.packing_time,
+        SUM(CASE cost_types WHEN '1' THEN searchPrice ELSE 0 END) AS achieve,
+        SUM(CASE cost_types WHEN '2' THEN searchPrice ELSE 0 END) AS pay,
+        SUM(CASE cost_types WHEN '3' THEN searchPrice ELSE 0 END) AS extraAchieve,
+        SUM(CASE cost_types WHEN '4' THEN searchPrice ELSE 0 END) AS extraPay
+
+        FROM
+        (
+        select
+        a.belong_companies_id,a.mc_id,a.total_price,a.cost_types,b.vehicle,b.vehicle_ownership,b.packing_time,
+        SUM(total_price) AS searchPrice
+        FROM order_cost a
+        LEFT JOIN order_making_chest b on a.mc_id = b.id
+        WHERE a.belong_companies_id='738701429283360769' and b.vehicle_ownership='1'
+        GROUP BY a.cost_types,a.mc_id
+        ) as a
+   
+        GROUP BY a.mc_id
+        ORDER BY a.mc_id
+
+)as c
+ where year(c.packing_time)='2020'
+GROUP BY month(c.packing_time),c.vehicle
+ORDER BY c.vehicle
